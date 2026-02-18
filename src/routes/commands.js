@@ -1,6 +1,8 @@
 import express from "express";
 import { EventType } from "../domain/events.js";
 import { replayEvents } from "../domain/bankAccount.js";
+
+
 import {
   appendEvent,
   getLatestSnapshot,

@@ -2,7 +2,7 @@ import { query } from "../db/index.js";
 import { EventType } from "../domain/events.js";
 
 export async function projectEvent(event) {
-  const { aggregate_id, event_type, event_data, event_number, timestamp } = event;
+  const { aggregate_id, event_type, event_data, event_number, timestamp, event_id } = event;
 
   // ACCOUNT SUMMARY projection
   if (event_type === EventType.AccountCreated) {
@@ -52,4 +52,17 @@ export async function projectEvent(event) {
       [event_number, aggregate_id]
     );
   }
+
+
+  const totalRes = await query(`SELECT COUNT(*)::int AS count FROM events`);
+  const totalEvents = totalRes.rows[0].count;
+
+  await query(
+    `UPDATE projection_checkpoints
+     SET last_processed_event_number_global=$1,
+         last_processed_event_id=$2,
+         updated_at=NOW()
+     WHERE projection_name IN ('AccountSummaries','TransactionHistory')`,
+    [totalEvents, event_id]
+  );
 }
